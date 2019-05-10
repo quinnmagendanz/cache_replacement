@@ -1,6 +1,7 @@
 #ifndef __CACHE_H__
 #define __CACHE_H__
 
+#include <list>
 #include "stats.h"
 #include "g_std/g_string.h"
 #include "g_std/g_vector.h"
@@ -17,12 +18,8 @@ class Cache : public Memory {
         void invalidate(Address lineAddr);
         uint64_t access(Address lineAddr, bool isWrite);
         void addChild(Memory* child) { children.push_back(child); }
-    private:
-        // FIXME: Implement the following two functions
-        void updatePolicy(uint32_t line, uint32_t way, bool isMiss);
-        uint32_t chooseEvictWay(uint32_t line);
 
-    private:
+	private:
         g_string name;
         Memory *parent;
         g_vector<Memory*> children;
@@ -40,6 +37,37 @@ class Cache : public Memory {
 
         // FIXME: Add meta data for you replacement policy
         // (e.g. timestamp for LRU)
+
+		// Maximum replacement metadata = 32bits per entry
+
+		// Used for all cache replacement schemes except ARC
+		typedef uint8_t meta_t; // 8 bits per cache line
+		typedef g_vector<meta_t> line_meta_t;
+		g_vector<line_meta_t> tag_meta;
+		
+		// Used only for ARC replacement
+		typedef uint16_t b_arc_t; // At most # lines used. Only using 14 bits
+/*		struct Page {
+			uint8_t way; // Only using 4 bits
+			uint16_t tag; // Only using 14 bits
+		} // At most # lines used.
+		typedef std::list <Page> page_list;
+		typedef std::list <b_arc_t> shadow_list;
+		g_vector<page_list> T1Array;
+		g_vector<page_list> T2Array;
+		g_vector<shadow_list> B1Array;
+		g_vector<shadow_list> B2Array;
+*/
+        // FIXME: Implement the following two functions
+        void LRUUpdate(uint32_t line, uint32_t way, bool isMiss);
+        uint32_t LRU(uint32_t line, tag_t tag);
+        void LFUUpdate(uint32_t line, uint32_t way, bool isMiss);
+        uint32_t LFU(uint32_t line, tag_t tag);
+        void RRUpdate(uint32_t line, uint32_t way, bool isMiss);
+        uint32_t RR(uint32_t line, tag_t tag);
+        void SRRIPUpdate(uint32_t line, uint32_t way, bool isMiss);
+        uint32_t SRRIP(uint32_t line, tag_t tag);
+
 };
 
 #endif // __CACHE_H__
