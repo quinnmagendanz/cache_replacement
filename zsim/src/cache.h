@@ -1,7 +1,6 @@
 #ifndef __CACHE_H__
 #define __CACHE_H__
 
-#include <list>
 #include "stats.h"
 #include "g_std/g_string.h"
 #include "g_std/g_vector.h"
@@ -45,19 +44,20 @@ class Cache : public Memory {
 		typedef g_vector<meta_t> line_meta_t;
 		g_vector<line_meta_t> tag_meta;
 		
-		// Used only for ARC replacement
-		typedef uint16_t b_arc_t; // At most # lines used. Only using 14 bits
-/*		struct Page {
-			uint8_t way; // Only using 4 bits
-			uint16_t tag; // Only using 14 bits
-		} // At most # lines used.
-		typedef std::list <Page> page_list;
-		typedef std::list <b_arc_t> shadow_list;
+		/*// Used only for ARC replacement
+		typedef struct Page {
+			uint32_t way; // Only using 4 bits
+			tag_t tag; // Only using 14 bits
+		} Page; // At most # lines used.
+		typedef g_vector<Page> page_list;
+		g_vector<uint8_t> PArray;
 		g_vector<page_list> T1Array;
 		g_vector<page_list> T2Array;
-		g_vector<shadow_list> B1Array;
-		g_vector<shadow_list> B2Array;
-*/
+		g_vector<page_list> B1Array; // Does not use way field
+		g_vector<page_list> B2Array; // Does not use way field
+		// Total max use is (4 + 14 + 14) = 32 bits per entry
+		*/
+
         // FIXME: Implement the following two functions
         void LRUUpdate(uint32_t line, uint32_t way, bool isMiss);
         uint32_t LRU(uint32_t line, tag_t tag);
@@ -67,7 +67,11 @@ class Cache : public Memory {
         uint32_t RR(uint32_t line, tag_t tag);
         void SRRIPUpdate(uint32_t line, uint32_t way, bool isMiss);
         uint32_t SRRIP(uint32_t line, tag_t tag);
-
+		/*Page findPop(g_vector<Page> vec, tag_t tag, uint32_t way);
+		void replace(Page* x, uint32_t p, g_vector<Page> T1, g_vector<Page> T2, g_vector<Page> B1, g_vector<Page> B2);
+		void ARCUpdate(uint32_t line, uint32_t way, bool isMiss);
+		uint32_t ARC(uint32_t line, tag_t tag);
+		*/
 };
 
 #endif // __CACHE_H__
